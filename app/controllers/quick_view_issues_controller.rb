@@ -30,6 +30,7 @@ private
   def find_issue
     logger.info "issue_id => #{params[:id]}"
     @issue = @object = Issue.find(params[:id])
+    raise Unauthorized unless @issue.visible?
   rescue ActiveRecord::RecordNotFound
     render_404
   end
