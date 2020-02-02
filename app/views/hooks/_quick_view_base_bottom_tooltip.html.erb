@@ -1,7 +1,7 @@
 <script>
 //<![CDATA[
-var mouse_stay_issue = null;
 function quick_view_tooltip_init(elements, issue_id_parser) {
+  var show_timeout = null;
   elements.each(function(){
      var link = $(this);
      if (link.hasClass("has_quick_view_mouse_event")) return;
@@ -18,18 +18,15 @@ function quick_view_tooltip_init(elements, issue_id_parser) {
 
 function quick_view_tooltip_activate_if_mouse_stay_begin() {
    var link = $(this);
-   mouse_stay_issue = link.data("quick_view_issue");
-   setTimeout(function() {quick_view_tooltip_activate_if_mouse_stay(link)}, 1000);
+   show_timeout = setTimeout(function() {quick_view_tooltip_activate_if_mouse_stay(link)}, 1000);
 }
 
 function quick_view_tooltip_activate_if_mouse_stay_cancel() {
-   var link = $(this);
-   mouse_stay_issue = null;
+  clearTimeout(show_timeout);
 }
 
 function quick_view_tooltip_activate_if_mouse_stay(link) {
   var issue_id = link.data("quick_view_issue");
-  if (mouse_stay_issue != issue_id) return;
 
   if (!link.hasClass("has_quick_view_portrait")) {
     var url = "<%= portray_quick_view_issue_path(0) %>".replace(/0\/portray$/, issue_id + "/portray");
