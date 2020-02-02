@@ -1,0 +1,147 @@
+<%
+  #template args
+  #  issue - drawing target
+
+  extend ProjectsHelper
+  extend IssuesHelper
+  extend AttachmentsHelper
+  extend CustomFieldsHelper
+  extend IssueRelationsHelper
+  extend RepositoriesHelper
+  extend JournalsHelper
+
+  issue = @issue
+  project = @issue.project
+  changesets = issue.changesets.visible.all
+  journals = issue.journals.includes(:user, :details).reorder("#{Journal.table_name}.id ASC")
+  journals = journals.to_a
+  journals.each_with_index {|j,i| j.indice = i+1}
+  journals.reject!(&:private_notes?) unless User.current.allowed_to?(:view_private_notes, project)
+  journals.reverse! if User.current.wants_comments_in_reverse_order?
+
+  dialog_id = Time.now.to_i
+  dialog_html_id = "quick_view_dialog_#{dialog_id}"
+  dialog_title = "Quick View - \##{issue.id} #{issue.subject}"
+%>
+  <div id="<%= dialog_html_id %>" class="quick_view_dialog" style="background-color: white;" title="<%= dialog_title %>" data-issue="<%= issue.id.to_s %>">
+     <div class="issue">
+        <%= avatar(@issue.author, :size => "50") %>
+        <div class="subject">
+        <%= render_issue_subject_with_tree(issue) %>
+        </div>
+        <p class="author">
+        <%= authoring issue.created_on, issue.author %>.
+        <% if issue.created_on != issue.updated_on %>
+        <%= l(:label_updated_time, time_tag(issue.updated_on)).html_safe %>.
+        <% end %>
+        </p>
+
+        <% if redmine_version <= 31 %>
+        <table class="attributes">
+        <% else %>
+        <div class="attributes">
+        <% end %>
+
+        <%= issue_fields_rows do |rows|
+          rows.left l(:field_status), h(issue.status.name), :class => 'status'
+          rows.left l(:field_priority), h(issue.priority.name), :class => 'priority'
+
+          unless issue.disabled_core_fields.include?('assigned_to_id')
+            rows.left l(:field_assigned_to), avatar(issue.assigned_to, :size => "14").to_s.html_safe + (issue.assigned_to ? link_to_user(issue.assigned_to) : "-"), :class => 'assigned-to'
+          end
+          unless issue.disabled_core_fields.include?('category_id')
+            rows.left l(:field_category), h(issue.category ? issue.category.name : "-"), :class => 'category'
+          end
+          unless issue.disabled_core_fields.include?('fixed_version_id')
+            rows.left l(:field_fixed_version), (issue.fixed_version ? link_to_version(issue.fixed_version) : "-"), :class => 'fixed-version'
+          end
+
+          unless issue.disabled_core_fields.include?('start_date')
+            rows.right l(:field_start_date), format_date(issue.start_date), :class => 'start-date'
+          end
+          unless issue.disabled_core_fields.include?('due_date')
+            rows.right l(:field_due_date), format_date(issue.due_date), :class => 'due-date'
+          end
+          unless issue.disabled_core_fields.include?('done_ratio')
+            rows.right l(:field_done_ratio), progress_bar(issue.done_ratio, :width => '80px', :legend => "#{issue.done_ratio}%"), :class => 'progress'
+          end
+          unless issue.disabled_core_fields.include?('estimated_hours')
+            unless issue.estimated_hours.nil?
+              rows.right l(:field_estimated_hours), l_hours(issue.estimated_hours), :class => 'estimated-hours'
+            end
+          end
+          if User.current.allowed_to?(:view_time_entries, project)
+            if redmine_version() < 26
+              rows.right l(:label_spent_time), (issue.total_spent_hours > 0 ? link_to(l_hours(issue.total_spent_hours), project_issue_time_entries_path(project, issue)) : "-"), :class => 'spent-time'
+            else
+              rows.right l(:label_spent_time), (issue.total_spent_hours > 0 ? link_to(l_hours(issue.total_spent_hours), issue_time_entries_path(issue)) : "-"), :class => 'spent-time'
+            end
+          end
+
+        end %>
+
+        <%= render_custom_fields_rows(issue) %>
+        <% unless Setting.plugin_quick_view['disable_call_hook'] %>
+        <%= call_hook(:view_issues_show_details_bottom, :issue => @issue) %>
+        <% end %>
+
+        <% if redmine_version() <= 31 %>
+        </table>
+        <% else %>
+        </div>
+        <% end %>
+
+        <hr />
+         
+        <div class="description">
+          <p><strong><%=l(:field_description)%></strong></p>
+          <div class="wiki">
+          <% if issue.description? %>
+          <%= textilizable issue, :description, :attachments => issue.attachments %>
+          <% else %>
+          <i>description is empty</i>
+          <% end %>
+          </div>
+          <% if issue.attachments.any? %>
+          <%= link_to_attachments issue, :thumbnails => true %>
+          <% end %>
+        </div>
+
+        <% unless Setting.plugin_quick_view['disable_call_hook'] %>
+        <%= call_hook(:view_issues_show_description_bottom, :issue => @issue) %>
+        <% end %>
+
+        <% if !@issue.leaf? || User.current.allowed_to?(:manage_subtasks, @project) %>
+        <hr />
+        <div id="issue_tree">
+          <div class="contextual">
+              <%= link_to_new_subtask(@issue) if User.current.allowed_to?(:manage_subtasks, @project) %>
+            </div>
+            <p><strong><%=l(:label_subtask_plural)%></strong></p>
+            <%= render_descendants_tree(@issue) unless @issue.leaf? %>
+          </div>
+        <% end %>
+
+        <% if @relations.present? || User.current.allowed_to?(:manage_issue_relations, @project) %>
+          <hr />
+          <div id="relations">
+            <%= render :partial => 'issues/relations' %>
+          </div>
+        <% end %>
+     </div>
+
+     <% if changesets.present? %>
+     <div id="issue-changesets">
+     <h3><%=l(:label_associated_revisions)%></h3>
+     <%= render :partial => 'issues/changesets', :locals => { :changesets => changesets} %>
+     </div>
+     <% end %>
+
+     <% if journals.present? %>
+     <div id="history">
+     <h3><%=l(:label_history)%></h3>
+     <%= render :partial => 'issues/history', :locals => { :issue => issue, :journals => journals } %>
+     </div>
+     <% end %>
+
+  </div>
