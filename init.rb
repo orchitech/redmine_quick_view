@@ -1,5 +1,6 @@
 #coding: utf-8
 
+require_dependency 'redmine_quick_view'
 require_dependency File.expand_path('../app/helpers/application_helper.rb', __FILE__)
 require_dependency File.expand_path('../hooks', __FILE__)
 
@@ -28,4 +29,8 @@ Redmine::Plugin.register :redmine_quick_view do
                         'worktime_ext_dialog_anchor_enabled'=>'on',
                         'worktime_ext_tooltip_enabled'=>'on'}, 
            :partial => 'quick_view_issues/settings'
+end
+
+Rails.configuration.to_prepare do
+  RedmineQuickView.setup
 end

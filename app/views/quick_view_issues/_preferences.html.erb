@@ -1,0 +1,6 @@
+</fieldset>
+<fieldset class="box tabular">
+  <legend><%=l :label_quick_view_preferences %></legend>
+    <%= labelled_fields_for :pref, @user.pref do |pref_fields| %>
+      <p><%= pref_fields.check_box :quick_view_disable_tooltip %></p>
+    <% end %>

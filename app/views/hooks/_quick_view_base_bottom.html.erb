@@ -12,6 +12,8 @@
   issue_dialog_size[1] = issue_dialog_size[1].to_i
   issue_dialog_size[0] = 640 unless (400 ... 2048).include?(issue_dialog_size[0])
   issue_dialog_size[1] = 600 unless (300 ... 2048).include?(issue_dialog_size[1])
+
+  user_disable_tooltip = User.current.pref.quick_view_disable_tooltip || false
 %>
 <div id="quick_view_dialogs"></div>
 <script>
@@ -62,7 +64,7 @@ function quick_view_issue_dialog_event_init(elements) {
   });
 }
 
-<% if Setting.plugin_redmine_quick_view['issue_tooltip_enabled'] == "on" %>
+<% if Setting.plugin_redmine_quick_view['issue_tooltip_enabled'] == "on" && !user_disable_tooltip %>
 quick_view_issue_tooltip_init();
 $(document).ajaxComplete(quick_view_issue_tooltip_init);
 
