@@ -1,7 +1,7 @@
 #coding: utf-8
 
 class QuickViewIssuesController < ApplicationController
-  before_filter :find_issue, :find_project_from_association, :only => [:show, :portray]
+  before_action :find_issue, :find_project_from_association, :only => [:show, :portray]
 
   def show
     @relations = @issue.relations.select {|r| r.other_issue(@issue) && r.other_issue(@issue).visible? }
