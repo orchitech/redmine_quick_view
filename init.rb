@@ -3,7 +3,7 @@
 require_dependency File.expand_path('../app/helpers/application_helper.rb', __FILE__)
 require_dependency File.expand_path('../hooks', __FILE__)
 
-Redmine::Plugin.register :quick_view do
+Redmine::Plugin.register :redmine_quick_view do
   name 'Quick View plugin'
   author 'Akira Saito'
   description 'This plugin provides ability to view a details of the issue at the issues page.'

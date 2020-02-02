@@ -86,7 +86,7 @@
         <%= render_half_width_custom_fields_rows(issue) %>
         <% end %>
 
-        <% unless Setting.plugin_quick_view['disable_call_hook'] %>
+        <% unless Setting.plugin_redmine_quick_view['disable_call_hook'] %>
         <%= call_hook(:view_issues_show_details_bottom, :issue => @issue) %>
         <% end %>
 
@@ -112,7 +112,7 @@
           <% end %>
         </div>
 
-        <% unless Setting.plugin_quick_view['disable_call_hook'] %>
+        <% unless Setting.plugin_redmine_quick_view['disable_call_hook'] %>
         <%= call_hook(:view_issues_show_description_bottom, :issue => @issue) %>
         <% end %>
 
