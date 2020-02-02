@@ -80,7 +80,12 @@
 
         end %>
 
+        <% if redmine_version() <= 33 %>
         <%= render_custom_fields_rows(issue) %>
+        <% else %>
+        <%= render_half_width_custom_fields_rows(issue) %>
+        <% end %>
+
         <% unless Setting.plugin_quick_view['disable_call_hook'] %>
         <%= call_hook(:view_issues_show_details_bottom, :issue => @issue) %>
         <% end %>
