@@ -21,6 +21,7 @@
 var quick_view_dialog_open_queue = 0;
 var quick_view_click_event_object = null;
 
+<% if Setting.plugin_redmine_quick_view['issue_dialog_enabled'] == "on" %>
 quick_view_issue_dialog_init();
 $(document).ajaxComplete(quick_view_issue_dialog_init);
 
@@ -63,6 +64,7 @@ function quick_view_issue_dialog_event_init(elements) {
     element.dblclick(quick_view_issue_dblclick);
   });
 }
+<% end %>
 
 <% if Setting.plugin_redmine_quick_view['issue_tooltip_enabled'] == "on" && !user_disable_tooltip %>
 quick_view_issue_tooltip_init();

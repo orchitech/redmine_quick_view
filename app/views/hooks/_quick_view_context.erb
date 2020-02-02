@@ -1,3 +1,5 @@
+<% if Setting.plugin_redmine_quick_view['issue_dialog_enabled'] == "on" %>
+
 <%-
    extend AttachmentsHelper
    extend CustomFieldsHelper
@@ -59,4 +61,6 @@
   <li><%= context_menu_link( l(:button_quick_view),
                              "javascript:quick_view_show_dialog(#{ids_as_str})",
                              :class => 'icon-show') %></li>
+<% end %>
+
 <% end %>
